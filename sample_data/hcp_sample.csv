@@ -1,0 +1,11 @@
+NPI,FirstName,LastName,Specialty,Address,City,State,Zip,Phone,EntityURI
+1234567890,John,Smith,Cardiology,123 Main St,Boston,MA,02101,617-555-0100,entities/abc123
+1234567891,Jane,Doe,Oncology,456 Oak Ave,New York,NY,10001,212-555-0200,entities/def456
+1234567892,Robert,Johnson,Neurology,789 Pine Rd,Chicago,IL,60601,312-555-0300,entities/ghi789
+1234567893,Maria,Garcia,Pediatrics,321 Elm St,Miami,FL,33101,305-555-0400,entities/jkl012
+1234567894,James,Wilson,Cardiology,654 Maple Dr,Houston,TX,77001,713-555-0500,entities/mno345
+1234567895,Emily,Brown,Internal Medicine,987 Cedar Ln,San Francisco,CA,94101,415-555-0600,entities/pqr678
+1234567896,Michael,Davis,Orthopedics,147 Birch Ave,Seattle,WA,98101,206-555-0700,entities/stu901
+1234567897,Sarah,Martinez,Dermatology,258 Walnut St,Denver,CO,80201,303-555-0800,entities/vwx234
+1234567898,David,Anderson,Gastroenterology,369 Spruce Ct,Phoenix,AZ,85001,602-555-0900,entities/yza567
+1234567899,Lisa,Thomas,Endocrinology,480 Ash Blvd,Atlanta,GA,30301,404-555-1000,entities/bcd890
