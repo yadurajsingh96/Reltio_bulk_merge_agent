@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  bulk-merge-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reltio-bulk-merge-agent
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - ./reports:/app/reports
+      - ./sample_data:/app/sample_data
+    restart: unless-stopped
+
+  # CLI mode (run once and exit)
+  # Usage: docker compose run --rm cli analyze --file /app/sample_data/hcp_sample.csv
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./reports:/app/reports
+      - ./sample_data:/app/sample_data
+    entrypoint: ["python", "-m", "src.cli"]
+    profiles:
+      - cli

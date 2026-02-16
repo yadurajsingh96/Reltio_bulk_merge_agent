@@ -1,0 +1,57 @@
+[
+  {
+    "NPI": "1234567890",
+    "FirstName": "John",
+    "LastName": "Smith",
+    "Specialty": "Cardiology",
+    "Address": "123 Main St",
+    "City": "Boston",
+    "State": "MA",
+    "Zip": "02101",
+    "EntityURI": "entities/abc123"
+  },
+  {
+    "NPI": "1234567891",
+    "FirstName": "Jane",
+    "LastName": "Doe",
+    "Specialty": "Oncology",
+    "Address": "456 Oak Ave",
+    "City": "New York",
+    "State": "NY",
+    "Zip": "10001",
+    "EntityURI": "entities/def456"
+  },
+  {
+    "NPI": "1234567892",
+    "FirstName": "Robert",
+    "LastName": "Johnson",
+    "Specialty": "Neurology",
+    "Address": "789 Pine Rd",
+    "City": "Chicago",
+    "State": "IL",
+    "Zip": "60601",
+    "EntityURI": "entities/ghi789"
+  },
+  {
+    "NPI": "1234567893",
+    "FirstName": "Maria",
+    "LastName": "Garcia",
+    "Specialty": "Pediatrics",
+    "Address": "321 Elm St",
+    "City": "Miami",
+    "State": "FL",
+    "Zip": "33101",
+    "EntityURI": "entities/jkl012"
+  },
+  {
+    "NPI": "1234567894",
+    "FirstName": "James",
+    "LastName": "Wilson",
+    "Specialty": "Cardiology",
+    "Address": "654 Maple Dr",
+    "City": "Houston",
+    "State": "TX",
+    "Zip": "77001",
+    "EntityURI": "entities/mno345"
+  }
+]
