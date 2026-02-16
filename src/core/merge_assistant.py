@@ -12,18 +12,17 @@ Designed for both programmatic use and as backend for UI/CLI.
 """
 
 import asyncio
+import json
 import logging
-from typing import List, Dict, Any, Optional, Callable, Union
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
-import json
-import os
+from typing import Any, Callable, Dict, List, Optional
 
+from src.core.match_analyzer import MatchAnalyzer, MatchConfidence, MatchResult
+from src.core.merge_executor import MergeBatchResult, MergeExecutor, MergeOperation
 from src.core.reltio_client import ReltioClient, ReltioConfig
-from src.core.match_analyzer import MatchAnalyzer, MatchResult, MatchConfidence
-from src.core.merge_executor import MergeExecutor, MergeOperation, MergeBatchResult
-from src.parsers.file_parser import FileParser, ParsedFile, ParsedRecord
+from src.parsers.file_parser import FileParser, ParsedFile
 
 logger = logging.getLogger(__name__)
 
@@ -230,8 +229,14 @@ class MergeAssistant:
         session.status = "analyzed"
 
         # Log summary
-        auto_merge = sum(1 for r in results if r.best_match and r.best_match.match_score >= self.config.auto_merge_threshold)
-        review = sum(1 for r in results if r.best_match and self.config.review_threshold <= r.best_match.match_score < self.config.auto_merge_threshold)
+        auto_merge = sum(
+            1 for r in results if r.best_match and r.best_match.match_score >= self.config.auto_merge_threshold
+        )
+        review = sum(
+            1 for r in results
+            if r.best_match
+            and self.config.review_threshold <= r.best_match.match_score < self.config.auto_merge_threshold
+        )
         no_match = sum(1 for r in results if not r.best_match or r.recommendation == "no_match")
 
         logger.info(

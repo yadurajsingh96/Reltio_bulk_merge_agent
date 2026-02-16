@@ -9,23 +9,22 @@ A user-friendly interface for Data Stewards to:
 5. Download reports
 """
 
-import streamlit as st
-import pandas as pd
-import asyncio
+import json
 import os
 import sys
-from pathlib import Path
-from datetime import datetime
-import json
 import tempfile
+from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.core.merge_assistant import MergeAssistant, AssistantConfig, AnalysisSession
-from src.core.match_analyzer import MatchConfidence
-
+from src.core.match_analyzer import MatchConfidence  # noqa: E402
+from src.core.merge_assistant import AssistantConfig, MergeAssistant  # noqa: E402
 
 # Page configuration
 st.set_page_config(
@@ -203,7 +202,10 @@ def render_sidebar():
 def render_upload_step():
     """Render the file upload step"""
     st.markdown('<p class="main-header">📁 Upload HCP File</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Upload a CSV, Excel, or JSON file with HCP records to analyze</p>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="sub-header">Upload a CSV, Excel, or JSON file with HCP records to analyze</p>',
+        unsafe_allow_html=True,
+    )
 
     col1, col2 = st.columns([2, 1])
 
@@ -265,7 +267,7 @@ def render_upload_step():
                 # Cleanup temp file
                 try:
                     os.unlink(tmp_path)
-                except:
+                except OSError:
                     pass
 
     with col2:
@@ -315,7 +317,7 @@ def render_analysis_step():
             status_text.text(f"Analyzing record {completed} of {total}...")
 
         try:
-            results = st.session_state.assistant.run_analysis(session, on_progress)
+            st.session_state.assistant.run_analysis(session, on_progress)
             st.session_state.step = "review"
             st.rerun()
         except Exception as e:
@@ -490,8 +492,14 @@ def render_match_result(idx: int, result):
 
             # Score and confidence
             if best_match:
-                score_class = "high" if best_match.match_score >= 90 else ("medium" if best_match.match_score >= 70 else "low")
-                st.markdown(f'<span class="match-score-{score_class}">Score: {best_match.match_score:.0f}%</span>', unsafe_allow_html=True)
+                score_class = (
+                    "high" if best_match.match_score >= 90
+                    else ("medium" if best_match.match_score >= 70 else "low")
+                )
+                st.markdown(
+                    f'<span class="match-score-{score_class}">Score: {best_match.match_score:.0f}%</span>',
+                    unsafe_allow_html=True,
+                )
                 st.caption(f"Confidence: {best_match.confidence.value}")
                 st.caption(f"Rec: {result.recommendation}")
             else:
@@ -541,7 +549,8 @@ def render_merge_step():
     for idx in st.session_state.selected_merges:
         session.selected_merges[idx] = 0  # Use best match
 
-    st.info(f"{'🧪 DRY RUN MODE - Validating' if dry_run else '🔀 Executing'} {len(st.session_state.selected_merges)} merge operations...")
+    mode_label = "🧪 DRY RUN MODE - Validating" if dry_run else "🔀 Executing"
+    st.info(f"{mode_label} {len(st.session_state.selected_merges)} merge operations...")
 
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -637,7 +646,7 @@ def main():
     init_session_state()
 
     # Sidebar
-    config = render_sidebar()
+    render_sidebar()
 
     # Main content based on step
     if not st.session_state.assistant:

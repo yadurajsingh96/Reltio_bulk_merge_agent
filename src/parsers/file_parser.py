@@ -16,11 +16,11 @@ Features:
 import csv
 import json
 import logging
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Iterator, Tuple
+import re
 from dataclasses import dataclass, field
 from enum import Enum
-import re
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Optional
 
 logger = logging.getLogger(__name__)
 

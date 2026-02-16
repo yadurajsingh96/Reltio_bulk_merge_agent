@@ -23,14 +23,12 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.core.merge_assistant import MergeAssistant, AssistantConfig
-from src.core.match_analyzer import MatchConfidence
+from src.core.merge_assistant import AssistantConfig, MergeAssistant  # noqa: E402
 
 
 def setup_logging(verbose: bool = False):
@@ -93,7 +91,7 @@ def cmd_health(args):
     # Reltio status
     reltio = health["reltio"]
     if reltio["status"] == "healthy":
-        print(f"  Reltio:  CONNECTED")
+        print("  Reltio:  CONNECTED")
         print(f"  Tenant:  {config.reltio_tenant_id}")
         print(f"  Env:     {config.reltio_environment}")
     else:
@@ -104,7 +102,7 @@ def cmd_health(args):
     if llm["status"] == "configured":
         print(f"  LLM:     {llm['provider'].upper()} configured")
     elif llm["status"] == "not_configured":
-        print(f"  LLM:     Not configured (scoring only, no AI analysis)")
+        print("  LLM:     Not configured (scoring only, no AI analysis)")
     else:
         print(f"  LLM:     ERROR - {llm.get('error', 'Unknown')}")
 
@@ -197,10 +195,13 @@ def cmd_analyze(args):
 
             if bm:
                 print(f"  {selected} Row {rec.row_number}: {input_label}")
-                print(f"        -> {bm.entity_label} ({bm.entity_uri}) Score: {bm.match_score:.0f}% [{bm.confidence.value}]")
+                print(
+                    f"        -> {bm.entity_label} ({bm.entity_uri})"
+                    f" Score: {bm.match_score:.0f}% [{bm.confidence.value}]"
+                )
             else:
                 print(f"  {selected} Row {rec.row_number}: {input_label}")
-                print(f"        -> No match found")
+                print("        -> No match found")
 
         if len(results) > 20:
             print(f"  ... and {len(results) - 20} more records (see report for full details)")
@@ -280,7 +281,6 @@ def cmd_merge(args):
     print(f"\n  {'Validating' if args.dry_run else 'Executing'} merges...")
 
     def on_merge_progress(completed, total, operation):
-        status = "OK" if operation.status.value == "success" else operation.status.value
         print_progress(completed, total)
 
     try:
@@ -294,7 +294,7 @@ def cmd_merge(args):
         return 1
 
     print()
-    print(f"  Results:")
+    print("  Results:")
     print(f"    Total:      {result.total_operations}")
     print(f"    Successful: {result.successful}")
     print(f"    Failed:     {result.failed}")
@@ -377,7 +377,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Health command
-    health_parser = subparsers.add_parser("health", parents=[common], help="Check connectivity")
+    subparsers.add_parser("health", parents=[common], help="Check connectivity")
 
     # Analyze command
     analyze_parser = subparsers.add_parser("analyze", parents=[common], help="Analyze HCP file for matches")
@@ -387,8 +387,12 @@ def build_parser() -> argparse.ArgumentParser:
     analyze_parser.add_argument("--csv", action="store_true", help="Also export CSV report")
     analyze_parser.add_argument("--no-llm", action="store_true", help="Disable LLM analysis")
     analyze_parser.add_argument("--auto-select", action="store_true", help="Auto-select high-confidence merges")
-    analyze_parser.add_argument("--auto-threshold", type=float, default=95.0, help="Auto-merge score threshold (default: 95)")
-    analyze_parser.add_argument("--review-threshold", type=float, default=70.0, help="Review score threshold (default: 70)")
+    analyze_parser.add_argument(
+        "--auto-threshold", type=float, default=95.0, help="Auto-merge score threshold (default: 95)"
+    )
+    analyze_parser.add_argument(
+        "--review-threshold", type=float, default=70.0, help="Review score threshold (default: 70)"
+    )
     analyze_parser.add_argument("--concurrency", type=int, default=10, help="Max concurrent API requests (default: 10)")
 
     # Merge command

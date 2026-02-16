@@ -37,11 +37,11 @@ Usage:
 import asyncio
 import logging
 import os
-from typing import Dict, Any, Optional, List, Callable
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
-from src.core.merge_assistant import MergeAssistant, AssistantConfig, AnalysisSession
-from src.core.match_analyzer import MatchResult, MatchConfidence
+from src.core.match_analyzer import MatchResult
+from src.core.merge_assistant import AnalysisSession, AssistantConfig, MergeAssistant
 from src.core.merge_executor import MergeBatchResult
 
 logger = logging.getLogger(__name__)

@@ -10,13 +10,13 @@ Features:
 """
 
 import asyncio
-import logging
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass, field
-from enum import Enum
 import json
+import logging
 import re
+from dataclasses import dataclass, field
 from difflib import SequenceMatcher
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
 from src.core.reltio_client import ReltioClient, ReltioConfig
 from src.parsers.file_parser import ParsedRecord

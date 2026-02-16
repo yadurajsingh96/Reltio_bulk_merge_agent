@@ -10,15 +10,15 @@ Handles:
 """
 
 import asyncio
+import json
 import logging
-from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-import json
+from typing import Any, Callable, Dict, List, Optional
 
+from src.core.match_analyzer import MatchResult
 from src.core.reltio_client import ReltioClient
-from src.core.match_analyzer import MatchResult, MatchCandidate
 
 logger = logging.getLogger(__name__)
 

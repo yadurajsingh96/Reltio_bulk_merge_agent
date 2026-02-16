@@ -10,13 +10,13 @@ Optimized for bulk operations with:
 """
 
 import asyncio
-import httpx
-import time
+import base64
 import logging
-from typing import List, Dict, Any, Optional, AsyncGenerator
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-import base64
+from typing import Any, Dict, List, Optional
+
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -500,7 +500,7 @@ class ReltioClient:
         """Check API health and connectivity"""
         try:
             # Simple search to verify connectivity
-            result = await self.search_entities(
+            await self.search_entities(
                 filter_expr="exists(uri)",
                 max_results=1
             )

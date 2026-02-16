@@ -17,8 +17,8 @@ Optimized for speed and efficiency with:
 __version__ = "1.0.0"
 __author__ = "Reltio AI MDM Solution"
 
+from src.core.match_analyzer import MatchAnalyzer
 from src.core.merge_assistant import MergeAssistant
 from src.core.reltio_client import ReltioClient
-from src.core.match_analyzer import MatchAnalyzer
 
 __all__ = ["MergeAssistant", "ReltioClient", "MatchAnalyzer"]

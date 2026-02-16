@@ -1,5 +1,5 @@
 """File parsers for HCP Merge Assistant"""
 
-from .file_parser import FileParser, ParsedRecord, ParsedFile
+from .file_parser import FileParser, ParsedFile, ParsedRecord
 
 __all__ = ["FileParser", "ParsedRecord", "ParsedFile"]
