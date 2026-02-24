@@ -23,10 +23,12 @@ import os
 import sys
 import time
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+load_dotenv(project_root / ".env")
 
 from src.core.merge_assistant import AssistantConfig, MergeAssistant  # noqa: E402
 
