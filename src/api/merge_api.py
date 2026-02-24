@@ -71,7 +71,9 @@ class MergeAPI:
         use_llm: bool = True,
         max_concurrent: int = 10,
         auto_merge_threshold: float = 95.0,
-        review_threshold: float = 70.0
+        review_threshold: float = 70.0,
+        ssl_ca_bundle: Optional[str] = None,
+        ssl_verify: bool = True
     ):
         """
         Initialize the Merge API.
@@ -87,6 +89,8 @@ class MergeAPI:
             max_concurrent: Maximum concurrent API requests
             auto_merge_threshold: Score threshold for auto-merge
             review_threshold: Score threshold for review
+            ssl_ca_bundle: Path to corporate CA cert bundle (e.g. Zscaler .pem)
+            ssl_verify: Set False to disable SSL verification (not recommended)
         """
         self._config = AssistantConfig(
             reltio_client_id=client_id,
@@ -98,7 +102,9 @@ class MergeAPI:
             use_llm=use_llm and bool(llm_api_key),
             max_concurrent_requests=max_concurrent,
             auto_merge_threshold=auto_merge_threshold,
-            review_threshold=review_threshold
+            review_threshold=review_threshold,
+            ssl_ca_bundle=ssl_ca_bundle,
+            ssl_verify=ssl_verify
         )
         self._assistant = MergeAssistant(self._config)
 
@@ -123,6 +129,9 @@ class MergeAPI:
         llm_key = os.getenv("OPENAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY")
         llm_provider = "anthropic" if os.getenv("ANTHROPIC_API_KEY") and not os.getenv("OPENAI_API_KEY") else "openai"
 
+        ssl_verify_raw = os.getenv("SSL_VERIFY", "true").strip().lower()
+        ssl_verify = ssl_verify_raw not in ("false", "0", "no")
+
         return cls(
             client_id=os.getenv("RELTIO_CLIENT_ID", ""),
             client_secret=os.getenv("RELTIO_CLIENT_SECRET", ""),
@@ -133,7 +142,9 @@ class MergeAPI:
             use_llm=bool(llm_key),
             max_concurrent=int(os.getenv("MAX_CONCURRENT", "10")),
             auto_merge_threshold=float(os.getenv("AUTO_MERGE_THRESHOLD", "95")),
-            review_threshold=float(os.getenv("REVIEW_THRESHOLD", "70"))
+            review_threshold=float(os.getenv("REVIEW_THRESHOLD", "70")),
+            ssl_ca_bundle=os.getenv("SSL_CA_BUNDLE") or None,
+            ssl_verify=ssl_verify
         )
 
     # =========================================================================
