@@ -95,7 +95,7 @@ def render_sidebar():
         # Environment selection
         environment = st.selectbox(
             "Reltio Environment",
-            ["dev", "test", "prod", "prod-usg"],
+            ["dev", "test", "test-usg", "prod", "prod-usg"],
             index=0
         )
 
@@ -529,6 +529,12 @@ def render_match_result(idx: int, result):
                             st.text(f"{i}. {cand.entity_label} ({cand.match_score:.0f}%)")
             else:
                 st.markdown("**No matching entity found in Reltio**")
+
+        # Search / analysis errors
+        if result.errors:
+            with st.expander(f"⚠️ Search errors ({len(result.errors)}) — click to debug"):
+                for err in result.errors:
+                    st.error(err)
 
         # LLM Analysis
         if result.llm_analysis:

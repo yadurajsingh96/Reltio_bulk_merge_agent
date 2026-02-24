@@ -401,7 +401,7 @@ graph TD
 | `RELTIO_CLIENT_ID` | Yes | - | OAuth 2.0 Client ID |
 | `RELTIO_CLIENT_SECRET` | Yes | - | OAuth 2.0 Client Secret |
 | `RELTIO_TENANT_ID` | Yes | - | Reltio Tenant ID |
-| `RELTIO_ENVIRONMENT` | Yes | `dev` | `dev`, `test`, `prod`, `prod-usg` |
+| `RELTIO_ENVIRONMENT` | Yes | `dev` | `dev`, `test`, `test-usg`,`prod`, `prod-usg` |
 | `OPENAI_API_KEY` | No | - | OpenAI API key for AI match analysis |
 | `ANTHROPIC_API_KEY` | No | - | Anthropic API key for AI match analysis |
 | `MCP_SERVER_URL` | No | - | Reltio MCP Server URL (for hybrid mode) |

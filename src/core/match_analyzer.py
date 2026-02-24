@@ -177,23 +177,38 @@ class MatchScorer:
             return flat
 
         for attr_name, attr_values in attrs.items():
-            if isinstance(attr_values, list) and attr_values:
-                # Get OV or first value
+            if not isinstance(attr_values, list) or not attr_values:
+                continue
+
+            # Pick the OV value first; fall back to the first value in the list
+            chosen_av = None
+            for av in attr_values:
+                if isinstance(av, dict) and av.get("ov", False):
+                    chosen_av = av
+                    break
+            if chosen_av is None:
+                # No OV found — use first dict value as fallback
                 for av in attr_values:
                     if isinstance(av, dict):
-                        if av.get("ov", False) or len(attr_values) == 1:
-                            value = av.get("value")
-                            if isinstance(value, dict):
-                                # Nested attribute
-                                for sub_name, sub_values in value.items():
-                                    if isinstance(sub_values, list) and sub_values:
-                                        for sv in sub_values:
-                                            if isinstance(sv, dict) and sv.get("value"):
-                                                flat[sub_name] = sv["value"]
-                                                break
-                            else:
-                                flat[attr_name] = value
-                            break
+                        chosen_av = av
+                        break
+
+            if chosen_av is None:
+                continue
+
+            value = chosen_av.get("value")
+            if isinstance(value, dict):
+                # Nested attribute (e.g. Addresses → City, State, PostalCode)
+                for sub_name, sub_values in value.items():
+                    if isinstance(sub_values, list) and sub_values:
+                        for sv in sub_values:
+                            if isinstance(sv, dict):
+                                sv_val = sv.get("value")
+                                if sv_val is not None:
+                                    flat[sub_name] = sv_val
+                                    break
+            elif value is not None:
+                flat[attr_name] = value
 
         return flat
 
@@ -432,14 +447,14 @@ class MatchAnalyzer:
             # Strategy 2: Search by identifiers (NPI, DEA, etc.)
             if record.identifiers and not candidates:
                 id_candidates = await self._search_by_identifiers(
-                    record, reltio_client, entity_type
+                    record, reltio_client, entity_type, errors
                 )
                 candidates.extend(id_candidates)
 
             # Strategy 3: Search by attributes if no identifier matches
             if not candidates:
                 attr_candidates = await self._search_by_attributes(
-                    record, reltio_client, entity_type
+                    record, reltio_client, entity_type, errors
                 )
                 candidates.extend(attr_candidates)
 
@@ -554,7 +569,8 @@ class MatchAnalyzer:
         self,
         record: ParsedRecord,
         client: ReltioClient,
-        entity_type: str
+        entity_type: str,
+        errors: Optional[List[str]] = None
     ) -> List[MatchCandidate]:
         """Search Reltio using record identifiers"""
         candidates = []
@@ -587,7 +603,10 @@ class MatchAnalyzer:
                     candidates.append(candidate)
 
             except Exception as e:
-                logger.warning(f"Identifier search failed for {id_type}: {e}")
+                msg = f"Identifier search failed for {id_type}={id_value}: {e}"
+                logger.warning(msg)
+                if errors is not None:
+                    errors.append(msg)
 
         return candidates
 
@@ -595,7 +614,8 @@ class MatchAnalyzer:
         self,
         record: ParsedRecord,
         client: ReltioClient,
-        entity_type: str
+        entity_type: str,
+        errors: Optional[List[str]] = None
     ) -> List[MatchCandidate]:
         """Search Reltio using record attributes"""
         candidates = []
@@ -614,7 +634,10 @@ class MatchAnalyzer:
                 candidates.append(candidate)
 
         except Exception as e:
-            logger.warning(f"Attribute search failed: {e}")
+            msg = f"Attribute search failed: {e}"
+            logger.warning(msg)
+            if errors is not None:
+                errors.append(msg)
 
         return candidates
 

@@ -151,7 +151,7 @@ class ReltioClient:
         method: str,
         url: str,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> Any:
         """Execute request with retry logic"""
         headers = await self._get_headers()
         kwargs["headers"] = headers
@@ -174,6 +174,12 @@ class ReltioClient:
 
             except httpx.HTTPStatusError as e:
                 last_exception = e
+                # Log the response body for easier debugging
+                resp_text = e.response.text[:500] if e.response.text else "(empty)"
+                logger.error(
+                    "HTTP %s from %s — %s",
+                    e.response.status_code, url, resp_text,
+                )
                 if e.response.status_code >= 500:
                     # Retry on server errors
                     await asyncio.sleep(self.config.retry_delay * (2 ** attempt))
@@ -199,7 +205,7 @@ class ReltioClient:
         offset: int = 0,
         select: str = "uri,label,type,attributes",
         options: str = "ovOnly"
-    ) -> Dict[str, Any]:
+    ) -> Any:
         """
         Search for entities using Reltio filter expressions
 
@@ -212,23 +218,25 @@ class ReltioClient:
             options: Response options
 
         Returns:
-            Search results with entities
+            List of matching entity dicts
         """
-        url = f"{self.api_base_url}/entities/_search"
-
         # Add entity type to filter
         full_filter = f"({filter_expr}) AND equals(type,'configuration/entityTypes/{entity_type}')"
 
-        payload = {
+        # Reltio accepts GET with query parameters or POST with the same
+        # parameters as query params.  Using GET here because it is the
+        # best-documented format in the Reltio developer docs.
+        url = f"{self.api_base_url}/entities"
+
+        params = {
             "filter": full_filter,
             "max": min(max_results, 200),
             "offset": offset,
             "select": select,
             "options": options,
-            "activeness": "active"
         }
 
-        return await self._request_with_retry("POST", url, json=payload)
+        return await self._request_with_retry("GET", url, params=params)
 
     async def search_by_attributes(
         self,
@@ -380,34 +388,43 @@ class ReltioClient:
         # Strategy 1: Exact match on unique identifiers
         matches = []
 
-        # Check for NPI (most reliable identifier)
+        # Check for NPI (most reliable identifier) — wrap independently so a
+        # failure here does not prevent the name-based fallback from running.
         if "NPI" in attributes and attributes["NPI"]:
-            npi_matches = await self.search_entities(
-                filter_expr=f"equals(attributes.NPI,'{attributes['NPI']}')",
-                entity_type=entity_type,
-                max_results=10
-            )
-            if npi_matches:
-                matches.extend(npi_matches)
+            try:
+                npi_matches = await self.search_entities(
+                    filter_expr=f"equals(attributes.NPI,'{attributes['NPI']}')",
+                    entity_type=entity_type,
+                    max_results=10
+                )
+                if isinstance(npi_matches, list):
+                    matches.extend(npi_matches)
+            except Exception as e:
+                logger.warning(f"NPI search failed in find_matches_for_attributes: {e}")
 
-        # Check for name-based matching
-        name_parts = []
-        for name_field in ["FirstName", "LastName", "Name"]:
+        # Check for name-based matching (runs even if NPI search failed)
+        name_fields = {}
+        for name_field in ["FirstName", "LastName", "FullName"]:
             if name_field in attributes and attributes[name_field]:
-                name_parts.append(attributes[name_field])
+                name_fields[name_field] = str(attributes[name_field]).strip()
 
-        if name_parts and not matches:
-            # Build fuzzy name search
-            name_conditions = [f"fuzzy(attributes,'{part}')" for part in name_parts]
+        if name_fields and not matches:
+            # Build fuzzy name search with proper attribute paths
+            name_conditions = [
+                f"fuzzy(attributes.{field},'{value}')"
+                for field, value in name_fields.items()
+            ]
             name_filter = " AND ".join(name_conditions)
-
-            name_matches = await self.search_entities(
-                filter_expr=name_filter,
-                entity_type=entity_type,
-                max_results=20
-            )
-            if name_matches:
-                matches.extend(name_matches)
+            try:
+                name_matches = await self.search_entities(
+                    filter_expr=name_filter,
+                    entity_type=entity_type,
+                    max_results=20
+                )
+                if isinstance(name_matches, list):
+                    matches.extend(name_matches)
+            except Exception as e:
+                logger.warning(f"Name search failed in find_matches_for_attributes: {e}")
 
         # Deduplicate by URI
         seen_uris = set()
@@ -514,9 +531,9 @@ class ReltioClient:
     async def health_check(self) -> Dict[str, Any]:
         """Check API health and connectivity"""
         try:
-            # Simple search to verify connectivity
+            # Simple search to verify connectivity — just fetch 1 entity
             await self.search_entities(
-                filter_expr="exists(uri)",
+                filter_expr="exists(type)",
                 max_results=1
             )
             return {"status": "healthy", "connected": True}
