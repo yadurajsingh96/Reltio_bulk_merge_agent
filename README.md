@@ -180,7 +180,7 @@ graph LR
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/yadurajsingh96/reltio-bulk-merge-agent.git
+git clone https://github.com/yadurajsingh96/reltio_bulk_merge_agent.git
 cd reltio_bulk_merge_agent
 
 python -m venv venv
