@@ -181,7 +181,7 @@ graph LR
 
 ```bash
 git clone https://github.com/yadurajsingh96/reltio-bulk-merge-agent.git
-cd reltio-bulk-merge-agent
+cd reltio_bulk_merge_agent
 
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
