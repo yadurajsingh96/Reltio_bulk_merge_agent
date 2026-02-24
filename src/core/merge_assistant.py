@@ -50,9 +50,17 @@ class AssistantConfig:
     auto_merge_threshold: float = 95.0  # Auto-approve merges above this score
     review_threshold: float = 70.0       # Require review for scores above this
 
+    # SSL configuration for corporate proxy/CA (e.g. Zscaler)
+    # ssl_ca_bundle: path to the corporate CA cert bundle file (.pem / .crt)
+    # ssl_verify: set to False to disable SSL verification (not recommended)
+    ssl_ca_bundle: Optional[str] = None
+    ssl_verify: bool = True
+
     @classmethod
     def from_env(cls) -> "AssistantConfig":
         """Create config from environment variables"""
+        ssl_verify_raw = os.getenv("SSL_VERIFY", "true").strip().lower()
+        ssl_verify = ssl_verify_raw not in ("false", "0", "no")
         return cls(
             reltio_client_id=os.getenv("RELTIO_CLIENT_ID", ""),
             reltio_client_secret=os.getenv("RELTIO_CLIENT_SECRET", ""),
@@ -62,7 +70,9 @@ class AssistantConfig:
             llm_provider="anthropic" if os.getenv("ANTHROPIC_API_KEY") else "openai",
             use_llm=bool(os.getenv("OPENAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY")),
             entity_type=os.getenv("ENTITY_TYPE", "HCP"),
-            max_concurrent_requests=int(os.getenv("MAX_CONCURRENT", "10"))
+            max_concurrent_requests=int(os.getenv("MAX_CONCURRENT", "10")),
+            ssl_ca_bundle=os.getenv("SSL_CA_BUNDLE") or None,
+            ssl_verify=ssl_verify
         )
 
 
@@ -109,7 +119,9 @@ class MergeAssistant:
             client_secret=config.reltio_client_secret,
             tenant_id=config.reltio_tenant_id,
             environment=config.reltio_environment,
-            max_concurrent_requests=config.max_concurrent_requests
+            max_concurrent_requests=config.max_concurrent_requests,
+            ssl_ca_bundle=config.ssl_ca_bundle,
+            ssl_verify=config.ssl_verify
         )
 
         # Initialize components

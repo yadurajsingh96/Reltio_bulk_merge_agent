@@ -33,6 +33,11 @@ class ReltioConfig:
     request_timeout: int = 30
     retry_attempts: int = 3
     retry_delay: float = 1.0
+    # SSL configuration for corporate proxy/CA (e.g. Zscaler)
+    # Set ssl_ca_bundle to the path of your corporate CA cert file/bundle.
+    # Set ssl_verify=False to disable verification entirely (not recommended).
+    ssl_ca_bundle: Optional[str] = None
+    ssl_verify: bool = True
 
 
 class TokenManager:
@@ -108,12 +113,22 @@ class ReltioClient:
 
     async def __aenter__(self):
         """Async context manager entry"""
+        # Resolve SSL verification setting:
+        #   - Path to CA bundle file  → verify=<path>   (corporate/Zscaler certs)
+        #   - ssl_verify=False        → verify=False     (disable – not recommended)
+        #   - default                 → verify=True      (system trust store)
+        if self.config.ssl_ca_bundle:
+            ssl_verify = self.config.ssl_ca_bundle
+        else:
+            ssl_verify = self.config.ssl_verify
+
         self._client = httpx.AsyncClient(
             timeout=httpx.Timeout(self.config.request_timeout),
             limits=httpx.Limits(
                 max_connections=self.config.max_concurrent_requests * 2,
                 max_keepalive_connections=self.config.max_concurrent_requests
-            )
+            ),
+            verify=ssl_verify
         )
         self._semaphore = asyncio.Semaphore(self.config.max_concurrent_requests)
         return self
